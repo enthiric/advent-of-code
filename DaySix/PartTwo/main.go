@@ -12,29 +12,41 @@ type Tree struct {
 	Root *Node
 }
 
-func (t *Tree) CountOrbitsFrom(n *Node) int {
+func (t *Tree) CountOrbitsFrom(n *Node, to string) int {
 	if n == nil {
 		return 0
 	}
 
-	return t.CountOrbits(n, 0)
+	return t.CountOrbits(n, to, 0)
 }
 
-func (t *Tree) CountOrbits(n *Node, c int) int {
-	if n.Parent != nil {
-		x := n
-		for {
-			if x.Parent == nil {
+func (t *Tree) CountOrbits(n *Node, to string, c int) int {
+	var y *Node
+	x := n
+	f := false
+	for {
+		if x.Parent == nil {
+			log.Fatal("we failed")
+		}
+
+		if !f {
+			if found := x.FindOrbit(to); found != nil {
+				// keep the cross orbit
+				y = x
+				f = true
+				x = found.Parent
+			}
+		}
+
+		x = x.Parent
+
+		if f {
+			if x.Name == y.Name {
 				break
 			}
-
-			x = x.Parent
-			c++
 		}
-	}
 
-	for _, node := range n.Childs {
-		c = t.CountOrbits(node, c)
+		c++
 	}
 
 	return c
@@ -89,7 +101,7 @@ func (l List) Remove(idx int) List {
 }
 
 func main() {
-	path, err := filepath.Abs("./UniversalOrbitMapPartOne/input.txt")
+	path, err := filepath.Abs("./PartTwo/input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +117,7 @@ func main() {
 		list = append(list, scanner.Text())
 	}
 
-	path, idx := list.Find("COM")
+	path, idx := list.Find("COM)")
 	orbits := strings.Split(path, ")")
 	list = list.Remove(idx)
 
@@ -132,7 +144,7 @@ func main() {
 		}
 	}
 
-	log.Print(tree.CountOrbitsFrom(tree.Root))
+	log.Print(tree.CountOrbitsFrom(tree.Root.FindOrbit("YOU"), "SAN"))
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
